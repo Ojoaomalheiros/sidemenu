@@ -26,7 +26,7 @@
 
     <!-- Main Navigation -->
     <div class="sidemenu-nav">
-      <button
+      <div
         v-for="item in processedMenuItems"
         :key="item.id"
         class="nav-item"
@@ -34,36 +34,36 @@
           'nav-item--active': item.id === content?.activeItemId,
           'nav-item--disabled': item.disabled
         }"
-        :disabled="item.disabled"
-        @click="handleMenuItemClick(item)"
-        @mouseenter="handleMouseEnter(item)"
-        @mouseleave="handleMouseLeave(item)"
+        role="button"
+        tabindex="0"
+        @click.stop.prevent="handleMenuItemClick(item)"
+        @keydown.enter="handleMenuItemClick(item)"
       >
         <span class="nav-item-icon" v-html="getIconSvg(item.icon)"></span>
         <span class="nav-item-label">{{ item.label }}</span>
         <span v-if="item.badge" class="nav-item-badge">{{ item.badge }}</span>
-      </button>
+      </div>
     </div>
 
     <!-- Bottom Section -->
     <div class="sidemenu-bottom">
       <!-- Help -->
-      <button v-if="content?.showHelp" class="bottom-item" @click="handleHelpClick">
+      <div v-if="content?.showHelp" class="bottom-item" role="button" tabindex="0" @click.stop.prevent="handleHelpClick">
         <span class="bottom-item-icon" v-html="helpIcon"></span>
         <span class="bottom-item-label">{{ content?.helpLabel || 'Ajuda' }}</span>
-      </button>
+      </div>
 
       <!-- Settings -->
-      <button v-if="content?.showSettings" class="bottom-item" @click="handleSettingsClick">
+      <div v-if="content?.showSettings" class="bottom-item" role="button" tabindex="0" @click.stop.prevent="handleSettingsClick">
         <span class="bottom-item-icon" v-html="settingsIcon"></span>
         <span class="bottom-item-label">{{ content?.settingsLabel || 'Configuracoes' }}</span>
-      </button>
+      </div>
 
       <!-- Logout -->
-      <button v-if="content?.showLogout" class="bottom-item" @click="handleLogoutClick">
+      <div v-if="content?.showLogout" class="bottom-item" role="button" tabindex="0" @click.stop.prevent="handleLogoutClick">
         <span class="bottom-item-icon" v-html="logoutIcon"></span>
         <span class="bottom-item-label">{{ content?.logoutLabel || 'Sair' }}</span>
-      </button>
+      </div>
 
       <!-- User Profile -->
       <div v-if="content?.showUserProfile" class="user-profile">
@@ -175,36 +175,9 @@ export default {
         : 'disconnected';
     });
 
+    // Simple onMounted - no DOM manipulation
     onMounted(() => {
-      console.log('[Sidemenu] Component mounted');
-      console.log('[Sidemenu] wwLib available:', typeof wwLib !== 'undefined');
-      console.log('[Sidemenu] props.content:', props.content);
-
-      // Use wwLib for proper WeWeb integration
-      const frontWindow = typeof wwLib !== 'undefined' ? wwLib.getFrontWindow() : window;
-      const frontDocument = typeof wwLib !== 'undefined' ? wwLib.getFrontDocument() : document;
-
-      console.log('[Sidemenu] frontWindow:', frontWindow);
-      console.log('[Sidemenu] Is preview mode:', frontWindow !== window);
-
-      if (sidemenuRef.value) {
-        console.log('[Sidemenu] sidemenuRef found');
-        console.log('[Sidemenu] Element styles:', frontWindow.getComputedStyle(sidemenuRef.value));
-
-        // Force full height on parent elements
-        let parent = sidemenuRef.value.parentElement;
-        const body = frontDocument.body;
-        while (parent && parent !== body) {
-          // Try to force height on WeWeb wrapper elements
-          if (parent.offsetHeight < frontWindow.innerHeight) {
-            parent.style.height = '100vh';
-            parent.style.minHeight = '100vh';
-          }
-          parent = parent.parentElement;
-        }
-      } else {
-        console.log('[Sidemenu] sidemenuRef NOT found');
-      }
+      // Component mounted successfully
     });
     // Process menu items with formula support
     const processedMenuItems = computed(() => {
@@ -283,30 +256,12 @@ export default {
     const userIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
     // Event handlers
-    const handleMouseEnter = (item) => {
-      console.log('[Sidemenu] Mouse ENTER:', item?.label);
-    };
-
-    const handleMouseLeave = (item) => {
-      console.log('[Sidemenu] Mouse LEAVE:', item?.label);
-    };
-
     const handleMenuItemClick = (item) => {
-      console.log('[Sidemenu] Click event fired:', item?.label);
-      console.log('[Sidemenu] Item data:', item);
-      console.log('[Sidemenu] wwLib available:', typeof wwLib !== 'undefined');
-
-      if (item?.disabled) {
-        console.log('[Sidemenu] Item is disabled, returning');
-        return;
-      }
+      if (item?.disabled) return;
 
       // Navigate to the page if URL is provided
       if (item?.url && typeof wwLib !== 'undefined') {
-        console.log('[Sidemenu] Navigating to:', item.url);
         wwLib.goTo(item.url);
-      } else {
-        console.log('[Sidemenu] Cannot navigate - URL:', item?.url, 'wwLib:', typeof wwLib);
       }
 
       emit('trigger-event', {
@@ -364,8 +319,6 @@ export default {
       settingsIcon,
       logoutIcon,
       userIcon,
-      handleMouseEnter,
-      handleMouseLeave,
       handleMenuItemClick,
       handleHelpClick,
       handleSettingsClick,
@@ -377,21 +330,19 @@ export default {
 
 <style lang="scss" scoped>
 .sidemenu {
-  display: flex !important;
-  flex-direction: column !important;
-  width: var(--menu-width, 220px);
-  height: 100vh !important;
-  min-height: 100vh !important;
-  max-height: 100vh !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
+  display: flex;
+  flex-direction: column;
+  width: var(--menu-width, 240px);
+  min-width: var(--menu-width, 240px);
+  height: 100%;
+  min-height: 100vh;
   background: var(--bg-color, #ffffff);
   border-right: 1px solid var(--border-color, #e5e7eb);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
   overflow-y: auto;
-  z-index: 100;
+  overflow-x: hidden;
+  flex-shrink: 0;
 }
 
 // Logo Section
@@ -480,62 +431,64 @@ export default {
   cursor: pointer;
   transition: background-color 0.2s ease;
   text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
 
-  &:hover {
-    background-color: #e5e7eb;
-  }
+.nav-item:hover {
+  background-color: #e5e7eb;
+}
 
-  &.nav-item--active {
-    background-color: var(--active-bg, #f3f4f6);
-    color: var(--active-text, #1A1A1A);
+.nav-item.nav-item--active {
+  background-color: var(--active-bg, #f3f4f6);
+  color: var(--active-text, #1A1A1A);
+}
 
-    &:hover {
-      background-color: #e5e7eb;
-    }
-  }
+.nav-item.nav-item--active:hover {
+  background-color: #e5e7eb;
+}
 
-  &.nav-item--disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.nav-item.nav-item--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
-    &:hover {
-      background-color: transparent;
-      cursor: not-allowed;
-    }
-  }
+.nav-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
 
-  .nav-item-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
+.nav-item-icon :deep(svg) {
+  width: 100%;
+  height: 100%;
+}
 
-    :deep(svg) {
-      width: 100%;
-      height: 100%;
-    }
-  }
+.nav-item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
 
-  .nav-item-label {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .nav-item-badge {
-    padding: 2px 8px;
-    background: var(--badge-bg, #7c3aed);
-    color: var(--badge-text, #ffffff);
-    border-radius: 4px;
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
+.nav-item-badge {
+  padding: 2px 8px;
+  background: var(--badge-bg, #7c3aed);
+  color: var(--badge-text, #ffffff);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 // Bottom Section
@@ -561,28 +514,33 @@ export default {
   cursor: pointer;
   transition: background-color 0.2s ease;
   text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
 
-  &:hover {
-    background-color: #e5e7eb;
-  }
+.bottom-item:hover {
+  background-color: #e5e7eb;
+}
 
-  .bottom-item-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
+.bottom-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
 
-    :deep(svg) {
-      width: 100%;
-      height: 100%;
-    }
-  }
+.bottom-item-icon :deep(svg) {
+  width: 100%;
+  height: 100%;
+}
 
-  .bottom-item-label {
-    flex: 1;
-  }
+.bottom-item-label {
+  flex: 1;
+  pointer-events: none;
 }
 
 // User Profile
