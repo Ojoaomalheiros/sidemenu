@@ -1,5 +1,5 @@
 <template>
-  <nav class="sidemenu" :style="computedStyle">
+  <nav ref="sidemenuRef" class="sidemenu" :style="computedStyle">
     <!-- Logo Section -->
     <div class="sidemenu-logo">
       <img
@@ -29,7 +29,6 @@
       <button
         v-for="item in processedMenuItems"
         :key="item.id"
-        type="button"
         class="nav-item"
         :class="{
           'nav-item--active': item.id === content?.activeItemId,
@@ -47,19 +46,19 @@
     <!-- Bottom Section -->
     <div class="sidemenu-bottom">
       <!-- Help -->
-      <button v-if="content?.showHelp" type="button" class="bottom-item" @click="handleHelpClick">
+      <button v-if="content?.showHelp" class="bottom-item" @click="handleHelpClick">
         <span class="bottom-item-icon" v-html="helpIcon"></span>
         <span class="bottom-item-label">{{ content?.helpLabel || 'Ajuda' }}</span>
       </button>
 
       <!-- Settings -->
-      <button v-if="content?.showSettings" type="button" class="bottom-item" @click="handleSettingsClick">
+      <button v-if="content?.showSettings" class="bottom-item" @click="handleSettingsClick">
         <span class="bottom-item-icon" v-html="settingsIcon"></span>
         <span class="bottom-item-label">{{ content?.settingsLabel || 'Configuracoes' }}</span>
       </button>
 
       <!-- Logout -->
-      <button v-if="content?.showLogout" type="button" class="bottom-item" @click="handleLogoutClick">
+      <button v-if="content?.showLogout" class="bottom-item" @click="handleLogoutClick">
         <span class="bottom-item-icon" v-html="logoutIcon"></span>
         <span class="bottom-item-label">{{ content?.logoutLabel || 'Sair' }}</span>
       </button>
@@ -80,7 +79,7 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue';
 
 export default {
   props: {
@@ -92,100 +91,132 @@ export default {
   },
   emits: ['trigger-event'],
   setup(props, { emit }) {
-    const logoError = ref(false)
-
-    // Internal variables using WeWeb's component variable system (like working components)
-    const { value: activeMenuItem, setValue: setActiveMenuItem } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'activeMenuItem',
-      type: 'object',
-      defaultValue: null,
-    })
+    const sidemenuRef = ref(null);
+    const logoError = ref(false);
 
     // Logo URL computed (WeWeb returns relative paths, need to prefix with CDN)
     const logoUrl = computed(() => {
-      const url = props.content?.logoUrl
-      if (!url) return ''
+      const url = props.content?.logoUrl;
+      if (!url) return '';
+
+      // If it's already a full URL, return as is
       if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url
+        return url;
       }
-      return `https://cdn.weweb.io/${url}`
-    })
+
+      // Otherwise, prefix with WeWeb CDN base URL
+      return `https://cdn.weweb.io/${url}`;
+    });
 
     // Reset logo error when URL changes
     watch(() => props.content?.logoUrl, () => {
-      logoError.value = false
-    })
+      logoError.value = false;
+    });
 
+    // Logo event handlers
     const handleLogoLoad = () => {
       // Logo loaded successfully
-    }
+    };
 
     const handleLogoError = () => {
-      logoError.value = true
-    }
+      logoError.value = true;
+    };
 
     // Collection IDs
-    const USER_COLLECTION_ID = '2a7ebac6-154a-4af7-8337-411e42e6a35c'
-    const WHATSAPP_COLLECTION_ID = 'a0220821-e59b-4484-97a4-a5ab8dea3a72'
+    const USER_COLLECTION_ID = '2a7ebac6-154a-4af7-8337-411e42e6a35c';
+    const WHATSAPP_COLLECTION_ID = 'a0220821-e59b-4484-97a4-a5ab8dea3a72';
 
-    // Fetch user name from collection (same pattern as working components)
+    // Fetch user name from collection
     const userName = computed(() => {
       try {
+        // First check if there's a manual override via props
         if (props.content?.userName) {
-          return props.content.userName
+          return props.content.userName;
         }
-        const collections = wwLib.$store?.getters?.['data/getCollections']
-        const nome = collections?.[USER_COLLECTION_ID]?.data?.[0]?.nome
-        if (nome) {
-          return nome
+
+        // Access collection directly from store
+        if (typeof wwLib !== 'undefined' && wwLib.$store) {
+          const collections = wwLib.$store.getters['data/getCollections'];
+          const nome = collections?.[USER_COLLECTION_ID]?.data?.[0]?.nome;
+          if (nome) {
+            return nome;
+          }
         }
       } catch (error) {
-        /* wwEditor:start */
-        console.error('[Sidemenu] Erro ao buscar nome do usuário:', error)
-        /* wwEditor:end */
+        console.error('[Sidemenu] Erro ao buscar nome do usuário:', error);
       }
-      return 'Usuário'
-    })
+
+      return 'Usuário';
+    });
 
     // Fetch WhatsApp status from collection
     const whatsappStatus = computed(() => {
       try {
-        const collections = wwLib.$store?.getters?.['data/getCollections']
-        const status = collections?.[WHATSAPP_COLLECTION_ID]?.data?.[0]?.status
-        if (status) {
-          return status.toLowerCase()
+        if (typeof wwLib !== 'undefined' && wwLib.$store) {
+          const collections = wwLib.$store.getters['data/getCollections'];
+          const status = collections?.[WHATSAPP_COLLECTION_ID]?.data?.[0]?.status;
+          if (status) {
+            return status.toLowerCase();
+          }
         }
       } catch (error) {
-        /* wwEditor:start */
-        console.error('[Sidemenu] Erro ao buscar status do WhatsApp:', error)
-        /* wwEditor:end */
+        console.error('[Sidemenu] Erro ao buscar status do WhatsApp:', error);
       }
-      return 'desconectado'
-    })
 
-    // Computed status type based on WhatsApp status
+      return 'desconectado';
+    });
+
+    // Computed status type based on WhatsApp status (connected or disconnected)
     const statusType = computed(() => {
-      return whatsappStatus.value === 'conectado' ? 'connected' : 'disconnected'
-    })
+      return whatsappStatus.value === 'conectado'
+        ? 'connected'
+        : 'disconnected';
+    });
 
-    // Process menu items with formula support (same pattern as working components)
+    onMounted(() => {
+      // Use wwLib for proper WeWeb integration
+      const frontWindow = typeof wwLib !== 'undefined' ? wwLib.getFrontWindow() : window;
+      const frontDocument = typeof wwLib !== 'undefined' ? wwLib.getFrontDocument() : document;
+
+      if (sidemenuRef.value) {
+        // Force full height on parent elements
+        let parent = sidemenuRef.value.parentElement;
+        const body = frontDocument.body;
+        while (parent && parent !== body) {
+          // Try to force height on WeWeb wrapper elements
+          if (parent.offsetHeight < frontWindow.innerHeight) {
+            parent.style.height = '100vh';
+            parent.style.minHeight = '100vh';
+          }
+          parent = parent.parentElement;
+        }
+      }
+    });
+    // Process menu items with formula support
     const processedMenuItems = computed(() => {
-      const items = props.content?.menuItems || []
-      if (!Array.isArray(items)) return []
+      const items = props.content?.menuItems || [];
 
-      // Use formula mapping if available
-      const { resolveMappingFormula } = wwLib.wwFormula.useFormula()
+      if (!Array.isArray(items)) return [];
 
       return items.map((item, index) => {
-        let id, label, icon, url, badge, disabled
+        // Use formula mapping if available, otherwise fall back to direct properties
+        let id, label, icon, url, badge, disabled;
 
-        id = resolveMappingFormula(props.content?.menuItemsIdFormula, item) ?? item?.id
-        label = resolveMappingFormula(props.content?.menuItemsLabelFormula, item) ?? item?.label
-        icon = resolveMappingFormula(props.content?.menuItemsIconFormula, item) ?? item?.icon
-        url = resolveMappingFormula(props.content?.menuItemsUrlFormula, item) ?? item?.url
-        badge = item?.badge || ''
-        disabled = item?.disabled || false
+        if (typeof wwLib !== 'undefined' && wwLib.wwFormula?.useFormula) {
+          const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
+          id = resolveMappingFormula(props.content?.menuItemsIdFormula, item) ?? item?.id;
+          label = resolveMappingFormula(props.content?.menuItemsLabelFormula, item) ?? item?.label;
+          icon = resolveMappingFormula(props.content?.menuItemsIconFormula, item) ?? item?.icon;
+          url = resolveMappingFormula(props.content?.menuItemsUrlFormula, item) ?? item?.url;
+        } else {
+          id = item?.id;
+          label = item?.label;
+          icon = item?.icon;
+          url = item?.url;
+        }
+
+        badge = item?.badge || '';
+        disabled = item?.disabled || false;
 
         return {
           id: id || `item-${index}`,
@@ -195,9 +226,9 @@ export default {
           badge,
           disabled,
           originalItem: item,
-        }
-      })
-    })
+        };
+      });
+    });
 
     // Computed styles
     const computedStyle = computed(() => ({
@@ -210,7 +241,7 @@ export default {
       '--badge-text': props.content?.badgeTextColor || '#ffffff',
       '--border-color': props.content?.borderColor || '#e5e7eb',
       '--menu-width': props.content?.width || '240px',
-    }))
+    }));
 
     // Icon SVGs
     const getIconSvg = (iconName) => {
@@ -225,24 +256,25 @@ export default {
         chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
         settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
         circle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
-      }
-      return icons[iconName] || icons.circle
-    }
+      };
+      return icons[iconName] || icons.circle;
+    };
 
-    const helpIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
-    const settingsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>'
-    const logoutIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'
-    const userIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    const helpIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
 
-    // Event handlers (same pattern as working components - direct call to wwLib.goTo)
+    const settingsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>';
+
+    const logoutIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+
+    const userIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+    // Event handlers
     const handleMenuItemClick = (item) => {
-      if (item?.disabled) return
+      if (item?.disabled) return;
 
-      setActiveMenuItem(item)
-
-      // Navigate directly like working components do
-      if (item?.url) {
-        wwLib.goTo(item.url)
+      // Navigate to the page if URL is provided
+      if (item?.url && typeof wwLib !== 'undefined') {
+        wwLib.goTo(item.url);
       }
 
       emit('trigger-event', {
@@ -252,38 +284,41 @@ export default {
           itemLabel: item?.label || '',
           itemUrl: item?.url || '',
         },
-      })
-    }
+      });
+    };
 
     const handleHelpClick = () => {
       // Open WhatsApp help link in new tab
-      const frontWindow = wwLib.getFrontWindow()
-      frontWindow.open('https://wa.me/552799490800?text=Estou%20precisando%20de%20ajuda', '_blank')
+      const frontWindow = typeof wwLib !== 'undefined' ? wwLib.getFrontWindow() : window;
+      frontWindow.open('https://wa.me/552799490800?text=Estou%20precisando%20de%20ajuda', '_blank');
 
       emit('trigger-event', {
         name: 'help-click',
         event: {},
-      })
-    }
+      });
+    };
 
     const handleSettingsClick = () => {
-      // Navigate directly like working components do
-      wwLib.goTo('/configuracoes')
+      // Navigate to settings page
+      if (typeof wwLib !== 'undefined') {
+        wwLib.goTo('/configuracoes');
+      }
 
       emit('trigger-event', {
         name: 'settings-click',
         event: {},
-      })
-    }
+      });
+    };
 
     const handleLogoutClick = () => {
       emit('trigger-event', {
         name: 'logout-click',
         event: {},
-      })
-    }
+      });
+    };
 
     return {
+      sidemenuRef,
       logoUrl,
       logoError,
       handleLogoLoad,
@@ -301,26 +336,28 @@ export default {
       handleHelpClick,
       handleSettingsClick,
       handleLogoutClick,
-    }
+    };
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
 .sidemenu {
-  display: flex;
-  flex-direction: column;
-  width: var(--menu-width, 240px);
-  min-width: var(--menu-width, 240px);
-  height: 100%;
-  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column !important;
+  width: var(--menu-width, 220px);
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
   background: var(--bg-color, #ffffff);
   border-right: 1px solid var(--border-color, #e5e7eb);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   overflow-y: auto;
-  overflow-x: hidden;
-  flex-shrink: 0;
+  z-index: 100;
 }
 
 // Logo Section
@@ -429,6 +466,7 @@ export default {
 
     &:hover {
       background-color: transparent;
+      cursor: not-allowed;
     }
   }
 
