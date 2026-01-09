@@ -36,6 +36,8 @@
         }"
         :disabled="item.disabled"
         @click="handleMenuItemClick(item)"
+        @mouseenter="handleMouseEnter(item)"
+        @mouseleave="handleMouseLeave(item)"
       >
         <span class="nav-item-icon" v-html="getIconSvg(item.icon)"></span>
         <span class="nav-item-label">{{ item.label }}</span>
@@ -174,11 +176,21 @@ export default {
     });
 
     onMounted(() => {
+      console.log('[Sidemenu] Component mounted');
+      console.log('[Sidemenu] wwLib available:', typeof wwLib !== 'undefined');
+      console.log('[Sidemenu] props.content:', props.content);
+
       // Use wwLib for proper WeWeb integration
       const frontWindow = typeof wwLib !== 'undefined' ? wwLib.getFrontWindow() : window;
       const frontDocument = typeof wwLib !== 'undefined' ? wwLib.getFrontDocument() : document;
 
+      console.log('[Sidemenu] frontWindow:', frontWindow);
+      console.log('[Sidemenu] Is preview mode:', frontWindow !== window);
+
       if (sidemenuRef.value) {
+        console.log('[Sidemenu] sidemenuRef found');
+        console.log('[Sidemenu] Element styles:', frontWindow.getComputedStyle(sidemenuRef.value));
+
         // Force full height on parent elements
         let parent = sidemenuRef.value.parentElement;
         const body = frontDocument.body;
@@ -190,6 +202,8 @@ export default {
           }
           parent = parent.parentElement;
         }
+      } else {
+        console.log('[Sidemenu] sidemenuRef NOT found');
       }
     });
     // Process menu items with formula support
@@ -269,12 +283,30 @@ export default {
     const userIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
     // Event handlers
+    const handleMouseEnter = (item) => {
+      console.log('[Sidemenu] Mouse ENTER:', item?.label);
+    };
+
+    const handleMouseLeave = (item) => {
+      console.log('[Sidemenu] Mouse LEAVE:', item?.label);
+    };
+
     const handleMenuItemClick = (item) => {
-      if (item?.disabled) return;
+      console.log('[Sidemenu] Click event fired:', item?.label);
+      console.log('[Sidemenu] Item data:', item);
+      console.log('[Sidemenu] wwLib available:', typeof wwLib !== 'undefined');
+
+      if (item?.disabled) {
+        console.log('[Sidemenu] Item is disabled, returning');
+        return;
+      }
 
       // Navigate to the page if URL is provided
       if (item?.url && typeof wwLib !== 'undefined') {
+        console.log('[Sidemenu] Navigating to:', item.url);
         wwLib.goTo(item.url);
+      } else {
+        console.log('[Sidemenu] Cannot navigate - URL:', item?.url, 'wwLib:', typeof wwLib);
       }
 
       emit('trigger-event', {
@@ -332,6 +364,8 @@ export default {
       settingsIcon,
       logoutIcon,
       userIcon,
+      handleMouseEnter,
+      handleMouseLeave,
       handleMenuItemClick,
       handleHelpClick,
       handleSettingsClick,
