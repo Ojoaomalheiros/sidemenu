@@ -251,6 +251,18 @@ export default {
       /* wwEditor:end */
     },
 
+    // Campanhas Icon (customizable from WeWeb library)
+    campanhasIcon: {
+      label: { en: 'Campanhas Icon', pt: 'Ícone de Campanhas' },
+      type: 'Icon',
+      section: 'settings',
+      /* wwEditor:start */
+      propertyHelp: {
+        tooltip: 'Select an icon from the WeWeb library for the Campanhas menu item',
+      },
+      /* wwEditor:end */
+    },
+
     // Bottom Actions
     showHelp: {
       label: { en: 'Show Help' },

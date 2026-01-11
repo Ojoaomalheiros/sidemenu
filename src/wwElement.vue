@@ -37,7 +37,12 @@
         :disabled="item.disabled"
         @click="handleMenuItemClick(item)"
       >
-        <span class="nav-item-icon" v-html="getIconSvg(item.icon)"></span>
+        <wwElement
+          v-if="item.id === 'campanhas' && content?.campanhasIcon"
+          :ww-props="content.campanhasIcon"
+          class="nav-item-icon"
+        ></wwElement>
+        <span v-else class="nav-item-icon" v-html="getIconSvg(item.icon)"></span>
         <span class="nav-item-label">{{ item.label }}</span>
         <span v-if="item.badge" class="nav-item-badge">{{ item.badge }}</span>
       </button>
@@ -274,7 +279,13 @@ export default {
 
       // Navigate to the page if URL is provided
       if (item?.url && typeof wwLib !== 'undefined') {
-        wwLib.goTo(item.url);
+        try {
+          wwLib.goTo(item.url);
+        } catch (error) {
+          console.warn('[Sidemenu] Erro ao navegar com wwLib.goTo, tentando fallback:', error);
+          const frontWindow = wwLib.getFrontWindow ? wwLib.getFrontWindow() : window;
+          frontWindow.location.href = item.url;
+        }
       }
 
       emit('trigger-event', {
@@ -301,7 +312,13 @@ export default {
     const handleSettingsClick = () => {
       // Navigate to settings page
       if (typeof wwLib !== 'undefined') {
-        wwLib.goTo('/configuracoes');
+        try {
+          wwLib.goTo('/configuracoes');
+        } catch (error) {
+          console.warn('[Sidemenu] Erro ao navegar com wwLib.goTo, tentando fallback:', error);
+          const frontWindow = wwLib.getFrontWindow ? wwLib.getFrontWindow() : window;
+          frontWindow.location.href = '/configuracoes';
+        }
       }
 
       emit('trigger-event', {
