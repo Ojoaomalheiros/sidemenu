@@ -124,13 +124,13 @@ export default {
       section: 'settings',
       bindable: true,
       defaultValue: [
-        { id: 'dashboard', label: 'Dashboard', icon: 'home', url: '/dashboard', badge: '', disabled: false },
-        { id: 'segmentos', label: 'Segmentos', icon: 'users', url: '/segmentos', badge: '', disabled: false },
-        { id: 'campanhas', label: 'Campanhas', icon: 'send', url: '/campanhas', badge: '', disabled: false },
-        { id: 'automacoes', label: 'Automações', icon: 'route', url: '/automacoes', badge: '', disabled: false },
-        { id: 'templates', label: 'Templates', icon: 'template', url: '/templates', badge: '', disabled: false },
-        { id: 'clientes', label: 'Clientes', icon: 'user', url: '/clientes', badge: '', disabled: false },
-        { id: 'cashbacks', label: 'Cashbacks', icon: 'coins', url: '/cashbacks', badge: '', disabled: false },
+        { id: 'dashboard', label: 'Dashboard', icon: null, url: '/dashboard', badge: '', disabled: false },
+        { id: 'segmentos', label: 'Segmentos', icon: null, url: '/segmentos', badge: '', disabled: false },
+        { id: 'campanhas', label: 'Campanhas', icon: null, url: '/campanhas', badge: '', disabled: false },
+        { id: 'automacoes', label: 'Automações', icon: null, url: '/automacoes', badge: '', disabled: false },
+        { id: 'templates', label: 'Templates', icon: null, url: '/templates', badge: '', disabled: false },
+        { id: 'clientes', label: 'Clientes', icon: null, url: '/clientes', badge: '', disabled: false },
+        { id: 'cashbacks', label: 'Cashbacks', icon: null, url: '/cashbacks', badge: '', disabled: false },
       ],
       options: {
         expandable: true,
@@ -139,29 +139,14 @@ export default {
         },
         item: {
           type: 'Object',
-          defaultValue: { id: 'item', label: 'New Item', icon: 'circle', url: '/', badge: '', disabled: false },
+          defaultValue: { id: 'item', label: 'New Item', icon: null, url: '/', badge: '', disabled: false },
           options: {
             item: {
               id: { label: { en: 'ID' }, type: 'Text' },
               label: { label: { en: 'Label' }, type: 'Text' },
               icon: {
                 label: { en: 'Icon' },
-                type: 'TextSelect',
-                options: {
-                  options: [
-                    { value: 'home', label: 'Home' },
-                    { value: 'users', label: 'Users' },
-                    { value: 'send', label: 'Send (Paper Plane)' },
-                    { value: 'template', label: 'Template' },
-                    { value: 'route', label: 'Route' },
-                    { value: 'user', label: 'User' },
-                    { value: 'coins', label: 'Coins' },
-                    { value: 'chart', label: 'Chart' },
-                    { value: 'settings', label: 'Settings' },
-                    { value: 'circle', label: 'Circle' },
-                  ],
-                },
-                defaultValue: 'circle',
+                type: 'Icon',
               },
               url: { label: { en: 'URL' }, type: 'Text' },
               badge: { label: { en: 'Badge Text' }, type: 'Text' },
