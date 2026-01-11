@@ -126,7 +126,7 @@ export default {
       defaultValue: [
         { id: 'dashboard', label: 'Dashboard', icon: 'home', url: '/dashboard', badge: '', disabled: false },
         { id: 'segmentos', label: 'Segmentos', icon: 'users', url: '/segmentos', badge: '', disabled: false },
-        { id: 'campanhas', label: 'Campanhas', icon: 'megaphone', url: '/campanhas', badge: '', disabled: false },
+        { id: 'campanhas', label: 'Campanhas', icon: 'paper-plane', url: '/campanhas', badge: '', disabled: false },
         { id: 'automacoes', label: 'Automações', icon: 'route', url: '/automacoes', badge: '', disabled: false },
         { id: 'templates', label: 'Templates', icon: 'template', url: '/templates', badge: '', disabled: false },
         { id: 'clientes', label: 'Clientes', icon: 'user', url: '/clientes', badge: '', disabled: false },
@@ -152,6 +152,7 @@ export default {
                     { value: 'home', label: 'Home' },
                     { value: 'users', label: 'Users' },
                     { value: 'megaphone', label: 'Megaphone' },
+                    { value: 'paper-plane', label: 'Paper Plane' },
                     { value: 'template', label: 'Template' },
                     { value: 'route', label: 'Route' },
                     { value: 'user', label: 'User' },
