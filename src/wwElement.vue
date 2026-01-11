@@ -328,7 +328,26 @@ export default {
       });
     };
 
-    const handleLogoutClick = () => {
+    const handleLogoutClick = async () => {
+      try {
+        // Logout using Supabase auth plugin
+        if (typeof wwLib !== 'undefined' && wwLib.wwPlugins?.supabaseAuth) {
+          await wwLib.wwPlugins.supabaseAuth.signOut();
+        }
+
+        // Redirect to login page after logout
+        if (typeof wwLib !== 'undefined') {
+          try {
+            wwLib.goTo('/login');
+          } catch (error) {
+            const frontWindow = wwLib.getFrontWindow ? wwLib.getFrontWindow() : window;
+            frontWindow.location.href = '/login';
+          }
+        }
+      } catch (error) {
+        console.error('[Sidemenu] Erro ao fazer logout:', error);
+      }
+
       emit('trigger-event', {
         name: 'logout-click',
         event: {},
