@@ -99,18 +99,9 @@ export default {
     const sidemenuRef = ref(null);
     const logoError = ref(false);
 
-    // Logo URL computed (WeWeb returns relative paths, need to prefix with CDN)
+    // Logo URL - usa diretamente a URL do Supabase
     const logoUrl = computed(() => {
-      const url = props.content?.logoUrl;
-      if (!url) return '';
-
-      // If it's already a full URL, return as is
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-
-      // Otherwise, prefix with WeWeb CDN base URL
-      return `https://cdn.weweb.io/${url}`;
+      return props.content?.logoUrl || 'https://rposipkylgypxzqucjae.supabase.co/storage/v1/object/public/flashcrm/logoflashSemFundo.png';
     });
 
     // Reset logo error when URL changes

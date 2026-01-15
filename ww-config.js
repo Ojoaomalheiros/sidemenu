@@ -31,18 +31,18 @@ export default {
   properties: {
     // Logo Section
     logoUrl: {
-      label: { en: 'Logo', pt: 'Logo' },
-      type: 'Image',
+      label: { en: 'Logo URL', pt: 'URL da Logo' },
+      type: 'Text',
       section: 'settings',
       bindable: true,
-      defaultValue: '',
+      defaultValue: 'https://rposipkylgypxzqucjae.supabase.co/storage/v1/object/public/flashcrm/logoflashSemFundo.png',
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Logo image for the sidebar',
+        tooltip: 'URL da imagem da logo (hospedada no Supabase)',
       },
       propertyHelp: {
-        tooltip: 'Upload or select a logo image to display in the sidebar',
+        tooltip: 'URL da logo. Por padrão usa o Supabase Storage para evitar problemas com CDN',
       },
       /* wwEditor:end */
     },
