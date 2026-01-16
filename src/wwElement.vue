@@ -101,26 +101,47 @@ export default {
 
     // Logo URL - usa diretamente a URL do Supabase
     const logoUrl = computed(() => {
-      return props.content?.logoUrl || 'https://rposipkylgypxzqucjae.supabase.co/storage/v1/object/public/flashcrm/logoflashSemFundo.png';
+      const url = props.content?.logoUrl || 'https://rposipkylgypxzqucjae.supabase.co/storage/v1/object/public/flashcrm/logoflashSemFundo.png';
+      console.log('[Sidemenu] Logo URL:', url);
+      return url;
     });
 
     // Reset logo error when URL changes
-    watch(() => props.content?.logoUrl, () => {
+    watch(() => props.content?.logoUrl, (newUrl) => {
+      console.log('[Sidemenu] Logo URL changed:', newUrl);
       logoError.value = false;
     });
 
     // Logo event handlers
     const handleLogoLoad = () => {
-      // Logo loaded successfully
+      console.log('[Sidemenu] ✅ Logo carregada com sucesso:', logoUrl.value);
     };
 
-    const handleLogoError = () => {
+    const handleLogoError = (event) => {
+      console.error('[Sidemenu] ❌ Erro ao carregar logo:', logoUrl.value, event);
       logoError.value = true;
     };
 
     // Collection IDs
     const USER_COLLECTION_ID = '2a7ebac6-154a-4af7-8337-411e42e6a35c';
     const WHATSAPP_COLLECTION_ID = 'a0220821-e59b-4484-97a4-a5ab8dea3a72';
+
+    // Fetch collections on mount
+    const fetchCollections = async () => {
+      try {
+        if (typeof wwLib !== 'undefined' && wwLib.wwCollection) {
+          // Fetch WhatsApp integration collection
+          await wwLib.wwCollection.fetchCollection(WHATSAPP_COLLECTION_ID);
+          console.log('[Sidemenu] ✅ WhatsApp collection fetched successfully');
+
+          // Fetch User collection
+          await wwLib.wwCollection.fetchCollection(USER_COLLECTION_ID);
+          console.log('[Sidemenu] ✅ User collection fetched successfully');
+        }
+      } catch (error) {
+        console.error('[Sidemenu] ❌ Error fetching collections:', error);
+      }
+    };
 
     // Fetch user name from collection
     const userName = computed(() => {
@@ -169,7 +190,14 @@ export default {
         : 'disconnected';
     });
 
-    onMounted(() => {
+    onMounted(async () => {
+      console.log('[Sidemenu] 🚀 Componente montado');
+      console.log('[Sidemenu] Logo URL inicial:', logoUrl.value);
+      console.log('[Sidemenu] props.content?.logoUrl:', props.content?.logoUrl);
+
+      // Fetch collections data
+      await fetchCollections();
+
       // Use wwLib for proper WeWeb integration
       const frontWindow = typeof wwLib !== 'undefined' ? wwLib.getFrontWindow() : window;
       const frontDocument = typeof wwLib !== 'undefined' ? wwLib.getFrontDocument() : document;
