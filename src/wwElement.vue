@@ -50,6 +50,12 @@
 
     <!-- Bottom Section -->
     <div class="sidemenu-bottom">
+      <!-- Credits Display -->
+      <div v-if="content?.showCredits !== false" class="credits-display">
+        <span class="credits-label">{{ content?.creditsLabel || 'Créditos' }}</span>
+        <span class="credits-value">{{ formattedCredits }}</span>
+      </div>
+
       <!-- Help -->
       <button v-if="content?.showHelp" class="bottom-item" @click="handleHelpClick">
         <span class="bottom-item-icon" v-html="helpIcon"></span>
@@ -125,6 +131,7 @@ export default {
     // Collection IDs
     const USER_COLLECTION_ID = '2a7ebac6-154a-4af7-8337-411e42e6a35c';
     const WHATSAPP_COLLECTION_ID = 'a0220821-e59b-4484-97a4-a5ab8dea3a72';
+    const CREDITS_COLLECTION_ID = '9e9e5f85-07e7-4ad4-ac08-9a302cfc6597';
 
     // Fetch collections on mount
     const fetchCollections = async () => {
@@ -137,6 +144,10 @@ export default {
           // Fetch User collection
           await wwLib.wwCollection.fetchCollection(USER_COLLECTION_ID);
           console.log('[Sidemenu] ✅ User collection fetched successfully');
+
+          // Fetch Credits collection
+          await wwLib.wwCollection.fetchCollection(CREDITS_COLLECTION_ID);
+          console.log('[Sidemenu] ✅ Credits collection fetched successfully');
         }
       } catch (error) {
         console.error('[Sidemenu] ❌ Error fetching collections:', error);
@@ -188,6 +199,38 @@ export default {
       return whatsappStatus.value === 'conectado'
         ? 'connected'
         : 'disconnected';
+    });
+
+    // Fetch user credits from collection
+    const userCredits = computed(() => {
+      try {
+        // First check if there's a manual override via props
+        if (props.content?.userCredits !== undefined && props.content?.userCredits !== null && props.content?.userCredits !== '') {
+          return props.content.userCredits;
+        }
+
+        // Access collection directly from store
+        if (typeof wwLib !== 'undefined' && wwLib.$store) {
+          const collections = wwLib.$store.getters['data/getCollections'];
+          const creditos = collections?.[CREDITS_COLLECTION_ID]?.data?.[0]?.creditos_disponveis;
+          if (creditos !== undefined && creditos !== null) {
+            return creditos;
+          }
+        }
+      } catch (error) {
+        console.error('[Sidemenu] Erro ao buscar créditos do usuário:', error);
+      }
+
+      return 0;
+    });
+
+    // Format credits for display
+    const formattedCredits = computed(() => {
+      const credits = userCredits.value;
+      if (typeof credits === 'number') {
+        return credits.toLocaleString('pt-BR');
+      }
+      return credits?.toString() || '0';
     });
 
     onMounted(async () => {
@@ -381,6 +424,7 @@ export default {
       handleLogoError,
       userName,
       statusType,
+      formattedCredits,
       processedMenuItems,
       computedStyle,
       getIconSvg,
@@ -565,6 +609,30 @@ export default {
   padding: 12px;
   border-top: 1px solid var(--border-color, #e5e7eb);
   margin-top: auto;
+}
+
+// Credits Display (discrete)
+.credits-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e5e7eb);
+
+  .credits-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .credits-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+  }
 }
 
 .bottom-item {

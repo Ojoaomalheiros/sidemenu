@@ -356,6 +356,52 @@ export default {
       /* wwEditor:end */
     },
 
+    // Credits Section
+    showCredits: {
+      label: { en: 'Show Credits', pt: 'Mostrar Créditos' },
+      type: 'OnOff',
+      section: 'settings',
+      bindable: true,
+      defaultValue: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'boolean',
+        tooltip: 'Show/hide the credits section',
+      },
+      /* wwEditor:end */
+    },
+    creditsLabel: {
+      label: { en: 'Credits Label', pt: 'Rótulo dos Créditos' },
+      type: 'Text',
+      section: 'settings',
+      bindable: true,
+      defaultValue: 'Créditos',
+      hidden: (content) => content?.showCredits === false,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Label text for the credits section',
+      },
+      /* wwEditor:end */
+    },
+    userCredits: {
+      label: { en: 'User Credits', pt: 'Créditos do Usuário' },
+      type: 'Number',
+      section: 'settings',
+      bindable: true,
+      defaultValue: null,
+      hidden: (content) => content?.showCredits === false,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'number',
+        tooltip: "Bind to: collections['9e9e5f85-07e7-4ad4-ac08-9a302cfc6597']?.['data']?.[0]?.['creditos_disponveis']",
+      },
+      propertyHelp: {
+        tooltip: 'Number of available credits. Leave empty to auto-fetch from collection.',
+      },
+      /* wwEditor:end */
+    },
+
     // Styling
     backgroundColor: {
       label: { en: 'Background Color' },
